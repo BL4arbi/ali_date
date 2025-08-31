@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AliDate - Compose ton samedi idéal 💕</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -542,7 +543,7 @@
                 <div class="dish-card" onclick="selectDish(this, 'dessert')">
                     <div class="dish-price">🗼 Date à Paris</div>
                     <div class="selection-indicator"></div>
-                    <div class="dish-name">🧁 Atelier Crêpes & dessert </div>
+                    <div class="dish-name">🧁 Atelier Crêpes & dessert</div>
                     <div class="dish-description">
                         On fait de la patisserie digne de Cédric grollet
                     </div>
@@ -619,6 +620,9 @@
     </div>
 
     <script>
+        // Initialiser EmailJS
+        emailjs.init('hzuY8P-RAHN6fDy8M');
+
         let currentPage = 0;
         let totalPages = 5;
         let selections = {
@@ -721,7 +725,7 @@
             });
         }
 
-        async function validateOrder() {
+        function validateOrder() {
             const completedSelections = Object.values(selections).filter(item => item.name !== null);
             
             if (completedSelections.length !== 4) {
@@ -738,16 +742,7 @@
                 date: 'Samedi 6 septembre - Braderie de Lille'
             };
             
-            // Envoyer l'email via Formspree
-            try {
-                const response = await fetch('https://formspree.io/f/xgveqpko', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        subject: '💕 Ses choix pour votre date AliDate !',
-                        message: `Salut mon chéri ! 
+            const message = `Salut mon chéri ! 
 
 J'ai composé mon date idéal sur AliDate :
 
@@ -758,21 +753,26 @@ J'ai composé mon date idéal sur AliDate :
 
 📅 Date : ${emailData.date}
 
-J'ai hâte d'être à samedi ! Bisous 💕`,
-                        _replyto: 'infotplarbirenaud@gmail.com',
-                        name: 'Ta future copine'
-                    })
-                });
-                
-                if (response.ok) {
-                    alert('🎉 Parfait ! Tes choix ont été envoyés  ! À samedi ma belle ! 💕');
-                } else {
-                    throw new Error('Erreur lors de l\'envoi');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                alert('Oups ! Il y a eu un petit souci. Fais une capture d\'écran de tes choix et envoie-la lui directement ! 😊');
-            }
+J'ai hâte d'être à samedi ! Bisous 💕`;
+
+            // Envoyer l'email via EmailJS
+            emailjs.send('service_guu1whg', 'template_l3hjnno', {
+                subject: '💕 Ses choix pour votre date AliDate !',
+                from_name: 'Ta future copine',
+                message: message,
+                to_email: 'infotplarbirenaud@gmail.com'
+            })
+            .then(function(response) {
+                console.log('SUCCESS!', response.status, response.text);
+                alert('🎉 Parfait ! Tes choix ont été envoyés ! À samedi ma belle ! 💕');
+            }, function(error) {
+                console.log('FAILED...', error);
+                // Fallback vers mailto
+                const subject = encodeURIComponent('💕 Mes choix pour notre date AliDate !');
+                const body = encodeURIComponent(message);
+                window.location.href = `mailto:infotplarbirenaud@gmail.com?subject=${subject}&body=${body}`;
+                alert('📧 Ton client mail va s\'ouvrir avec tes choix ! Envoie-lui le message ! 💕');
+            });
         }
 
         // Navigation avec les touches du clavier
